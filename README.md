@@ -1,20 +1,13 @@
 [![Artifact HUB](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/n8n)](https://artifacthub.io/packages/helm/open-8gears/n8n)
 
-> [!NOTE]
-> The n8n Helm chart is growing in popularity.
-> We're looking for additional conscientious and accurate maintainers and contributors
-> to improve and maintain this chart, governance, development, documentation and CI/CD workflows.
-> If you're interested in making a difference,
-> [join the discussion](https://github.com/8gears/n8n-helm-chart/discussions/90).
+# n8n Helm Chart for Kubernetes (jjnyn release)
 
-
-# n8n Helm Chart for Kubernetes
+This is a [jjnyn](https://github.com/jjnyn)-maintained release of the n8n Helm chart, based on [8gears/n8n-helm-chart](https://github.com/8gears/n8n-helm-chart). It includes support for **task runners (external mode)** with configurable `runners.image.repository` and `runners.image.tag` for the `n8nio/runners` image (n8n v2+).
 
 [n8n](https://github.com/n8n-io/n8n) is an extendable workflow automation tool.
 
-
-
-The Helm chart source code location is [github.com/8gears/n8n-helm-chart](https://github.com/8gears/n8n-helm-chart)
+- **Chart source (this repo):** [n8n-helm-chart](https://github.com/8gears/n8n-helm-chart) (fork/maintained by jjnyn)
+- **Upstream:** [github.com/8gears/n8n-helm-chart](https://github.com/8gears/n8n-helm-chart)
 
 ## Requirements
 
@@ -33,9 +26,10 @@ Use this structure to orient yourself.
 2. Ingress, (default is nginx, but you can change it to your own ingress controller)
 3. Main n8n app configuration + Kubernetes specific settings
 4. Worker related settings + Kubernetes specific settings
-5. Webhook related settings + Kubernetes specific settings
-6. Raw Resources to pass through your own manifests like GatewayAPI, ServiceMonitor etc.
-7. Redis related settings + Kubernetes specific settings
+5. **Task runners (external mode)** – optional `runners` section with `runners.image.repository` and `runners.image.tag` for the n8nio/runners image (n8n v2+)
+6. Webhook related settings + Kubernetes specific settings
+7. Raw Resources to pass through your own manifests like GatewayAPI, ServiceMonitor etc.
+8. Valkey/Redis related settings + Kubernetes specific settings
 
 ## Configurating N8n via Values and Environment Variables
 
@@ -66,7 +60,30 @@ There is no restriction, mix and match as you like.
 
 # Installation
 
-Install chart
+## Install from this chart (jjnyn release)
+
+From the repo root (or path to the chart):
+
+```shell
+helm install my-n8n ./charts/n8n --version 2.0.2
+```
+
+With a values file:
+
+```shell
+helm install my-n8n ./charts/n8n -f my-values.yaml
+```
+
+To enable **task runners (external mode)** and set a custom runners image:
+
+```shell
+helm install my-n8n ./charts/n8n \
+  --set runners.enabled=true \
+  --set runners.image.repository=n8nio/runners \
+  --set runners.image.tag=1.122.4
+```
+
+## Install from upstream (8gears OCI)
 
 ```shell
 helm install my-n8n oci://8gears.container-registry.com/library/n8n --version 1.0.0

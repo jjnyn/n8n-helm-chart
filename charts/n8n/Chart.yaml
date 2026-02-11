@@ -1,6 +1,6 @@
 apiVersion: v2
 name: n8n
-version: 2.0.1
+version: 2.0.2
 appVersion: 1.122.4
 type: application
 description: "Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services."
@@ -17,6 +17,8 @@ sources:
   - https://github.com/n8n-io/n8n
   - https://n8n.io/
 maintainers:
+  - name: jjnyn
+    url: https://github.com/jjnyn
   - name: 8gears
     email: contact@8gears.com
     url: https://github.com/8gears
@@ -34,5 +36,7 @@ annotations:
   artifacthub.io/prerelease: "false"
   # supported kinds are added, changed, deprecated, removed, fixed and security.
   artifacthub.io/changes: |
+    - kind: added
+      description: "Task runners (external mode) - configurable runners image repository and tag; optional deployment for n8nio/runners"
     - kind: changed
-      description: "Changed the ingress logic to allow different types of pathType in place of the hardcoded 'pathType: Prefix'"
+      description: "Chart maintained by jjnyn; version 2.0.2"
