@@ -17,6 +17,12 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    {{- if .Values.runners.enabled }}
+    - port: 5679
+      targetPort: broker
+      protocol: TCP
+      name: broker
+    {{- end }}
   selector:
     {{- include "n8n.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/type: master
