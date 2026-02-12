@@ -1,6 +1,6 @@
 apiVersion: v2
 name: n8n
-version: 2.0.3
+version: 2.0.4
 appVersion: 1.122.4
 type: application
 description: "Helm Chart for deploying n8n on Kubernetes, a fair-code workflow automation platform with native AI capabilities for technical teams. Easily automate tasks across different services."
@@ -39,4 +39,4 @@ annotations:
     - kind: added
       description: "Task runners (external mode) - configurable runners image repository and tag; optional deployment for n8nio/runners"
     - kind: changed
-      description: "Chart maintained by jjnyn; version 2.0.3"
+      description: "Chart maintained by jjnyn; version 2.0.4"
