@@ -2,6 +2,10 @@
 
 This file documents all notable changes to the [n8n-helm-chart](https://github.com/8gears/n8n-helm-chart/). The release numbering uses [semantic versioning](http://semver.org).
 
+## 2.0.3 (jjnyn release)
+
+- **Task runners:** When `runners.enabled` is true, the chart now sets on main and worker pods: `N8N_RUNNERS_MODE=external` and `N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0` so the broker listens on all interfaces and runner pods can connect (fixes "Waiting for task broker to be ready..." when broker was bound to 127.0.0.1).
+
 ## 2.0.2 (jjnyn release)
 
 - **Task runners (external mode):** Added optional `runners` section so you can deploy the `n8nio/runners` image for n8n v2+ Code node execution. You can set `runners.image.repository` and `runners.image.tag` (defaults to chart appVersion). When `runners.enabled` is true, the main service exposes port 5679 (task broker) and a separate `runners` deployment is created. See [n8n task runners docs](https://docs.n8n.io/hosting/configuration/task-runners/).
