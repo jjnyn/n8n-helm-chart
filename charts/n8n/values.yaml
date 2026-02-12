@@ -466,9 +466,10 @@ worker:
 # n8nio/runners image separately. The runners image version should match the n8n app version.
 # See https://docs.n8n.io/hosting/configuration/task-runners/
 #
-# On the main (and worker) app set: N8N_RUNNERS_ENABLED=true, N8N_RUNNERS_MODE=external,
-# N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0, N8N_RUNNERS_AUTH_TOKEN=<secret> (e.g. via main.config).
-# When runners.enabled is true, the main service exposes port 5679 (task broker) for runners to connect.
+# When runners.enabled is true, the chart automatically sets on main (and worker) pods:
+#   N8N_RUNNERS_MODE=external, N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
+# You must still set via main.config / main.secret: N8N_RUNNERS_ENABLED=true, N8N_RUNNERS_AUTH_TOKEN=<secret>.
+# The main service exposes port 5679 (task broker) so runner pods can connect.
 #
 runners:
   enabled: false

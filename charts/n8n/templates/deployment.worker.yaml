@@ -76,10 +76,20 @@ spec:
             - secretRef:
                 name: {{ include "n8n.fullname" . }}-worker-secret
             {{- end }}
-          env: {{ not (empty .Values.worker.extraEnv) | ternary nil "[]" }}
+          env:
+            {{- if or (not (empty .Values.worker.extraEnv)) .Values.runners.enabled }}
             {{- range $key, $value := .Values.worker.extraEnv }}
             - name: {{ $key }}
               {{- toYaml $value | nindent 14 }}
+            {{- end }}
+            {{- if .Values.runners.enabled }}
+            - name: N8N_RUNNERS_MODE
+              value: "external"
+            - name: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
+              value: "0.0.0.0"
+            {{- end }}
+            {{- else }}
+            []
             {{- end }}
           {{- if .Values.worker.command }}
           command:
