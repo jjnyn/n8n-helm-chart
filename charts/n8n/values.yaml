@@ -70,6 +70,9 @@ main:
   #    n8n:
   #     if you run n8n stateless, you should provide an encryption key here.
   #      encryption_key:
+  #     when runners.enabled, set auth token so n8n and the runners sidecar both get N8N_RUNNERS_AUTH_TOKEN (envFrom):
+  #      runners:
+  #        auth_token: '<your-secure-token>'
   #
   #    db:
   #      postgresdb:
@@ -461,15 +464,19 @@ worker:
 
 # # # # # # # # # # # # # # # #
 #
-# Task runners (external mode)
-# For n8n v2+, Code node execution runs on task runners. In external mode you run the
-# n8nio/runners image separately. The runners image version should match the n8n app version.
+# Task runners (external mode, sidecar – per official n8n docs)
+# In external mode the n8nio/runners image runs as a sidecar next to n8n. When runners.enabled
+# is true, the chart adds a task-runners sidecar to the main pod and to each worker pod.
 # See https://docs.n8n.io/hosting/configuration/task-runners/
 #
-# When runners.enabled is true, the chart automatically sets on main (and worker) pods:
-#   N8N_RUNNERS_MODE=external, N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0
-# You must still set via main.config / main.secret: N8N_RUNNERS_ENABLED=true, N8N_RUNNERS_AUTH_TOKEN=<secret>.
-# The main service exposes port 5679 (task broker) so runner pods can connect.
+# When runners.enabled is true:
+# - Main/worker container: N8N_RUNNERS_BROKER_LISTEN_ADDRESS defaults to 0.0.0.0 (override via main.extraEnv / worker.extraEnv).
+#   Also set N8N_RUNNERS_ENABLED, N8N_RUNNERS_MODE=external, N8N_RUNNERS_AUTH_TOKEN via main.extraEnv (or main.secret).
+# - Runners sidecar: N8N_RUNNERS_TASK_BROKER_URI defaults to http://localhost:5679, N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT to 15.
+#   Override via runners.extraEnv.
+# - N8N_RUNNERS_AUTH_TOKEN: set via main.secret (see below) so both n8n and the sidecar get it via envFrom,
+#   or set via main.extraEnv / runners.extraEnv (e.g. valueFrom.secretKeyRef).
+# - Launcher config: set configMapName to mount custom n8n-task-runners.json; otherwise set allowlists via runners.extraEnv (see below).
 #
 runners:
   enabled: false
@@ -481,23 +488,30 @@ runners:
     # Overrides the image tag. Defaults to the chart appVersion to match n8n.
     tag: ""
 
-  # Number of desired runner pods.
-  replicaCount: 1
+  # Optional ConfigMap containing custom launcher config (n8n-task-runners.json). If set, the file is
+  # mounted at /etc/n8n-task-runners.json in the sidecar. ConfigMap must have a key (configMapKey)
+  # with the JSON content. If not set, use runners.extraEnv for allowlists (see below).
+  configMapName: ""
+  configMapKey: "n8n-task-runners.json"
 
-  # Required for external mode: set N8N_RUNNERS_TASK_BROKER_URI (e.g. http://<release-name>-n8n:5679)
-  # and N8N_RUNNERS_AUTH_TOKEN (must match main.config n8n.runners.auth_token).
+  # Env for the runners sidecar. Defaults (overridable here): N8N_RUNNERS_TASK_BROKER_URI=http://localhost:5679,
+  # N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT=15. N8N_RUNNERS_AUTH_TOKEN: use main.secret.n8n.runners.auth_token (recommended,
+  # so n8n and sidecar share the same secret via envFrom), or set here (e.g. valueFrom.secretKeyRef).
+  # When configMapName is not set, pass launcher allowlists: NODE_FUNCTION_ALLOW_BUILTIN, NODE_FUNCTION_ALLOW_EXTERNAL,
+  # N8N_RUNNERS_STDLIB_ALLOW, N8N_RUNNERS_EXTERNAL_ALLOW.
   extraEnv: {}
-  #   N8N_RUNNERS_TASK_BROKER_URI: "http://RELEASE-NAME-n8n:5679"
-  #   N8N_RUNNERS_AUTH_TOKEN:
+  #   N8N_RUNNERS_AUTH_TOKEN:  # if not using main.secret
   #     valueFrom:
   #       secretKeyRef:
-  #         name: n8n-app-secret
-  #         key: N8N_RUNNERS_AUTH_TOKEN
+  #         name: n8n-runners-secret
+  #         key: auth-token
+  #   N8N_RUNNERS_TASK_BROKER_URI: "http://localhost:5679"   # override default
+  #   NODE_FUNCTION_ALLOW_BUILTIN: "crypto"
+  #   NODE_FUNCTION_ALLOW_EXTERNAL: "moment,uuid"
+  #   N8N_RUNNERS_STDLIB_ALLOW: "json"
+  #   N8N_RUNNERS_EXTERNAL_ALLOW: "numpy,pandas"
 
   resources: {}
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
 
 # Webhook related settings
 # With .Values.scaling.webhook.enabled=true you disable Webhooks from the main process, but you enable the processing on a different Webhook instance.

@@ -74,16 +74,14 @@ spec:
                 name: {{ include "n8n.fullname" . }}-app-secret
             {{- end }}
           env:
-            {{- if or (not (empty .Values.main.extraEnv)) .Values.runners.enabled }}
+            {{- if or .Values.main.extraEnv .Values.runners.enabled }}
+            {{- if .Values.runners.enabled }}
+            - name: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
+              value: "0.0.0.0"
+            {{- end }}
             {{- range $key, $value := .Values.main.extraEnv }}
             - name: {{ $key }}
               {{- toYaml $value | nindent 14 }}
-            {{- end }}
-            {{- if .Values.runners.enabled }}
-            - name: N8N_RUNNERS_MODE
-              value: "external"
-            - name: N8N_RUNNERS_BROKER_LISTEN_ADDRESS
-              value: "0.0.0.0"
             {{- end }}
             {{- else }}
             []
@@ -115,6 +113,34 @@ spec:
           {{- if .Values.main.extraVolumeMounts }}
             {{- toYaml .Values.main.extraVolumeMounts | nindent 12 }}
           {{- end }}
+        {{- if .Values.runners.enabled }}
+        - name: task-runners
+          image: "{{ .Values.runners.image.repository }}:{{ .Values.runners.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.runners.image.pullPolicy }}
+          env:
+            - name: N8N_RUNNERS_TASK_BROKER_URI
+              value: "http://localhost:5679"
+            - name: N8N_RUNNERS_AUTO_SHUTDOWN_TIMEOUT
+              value: "15"
+            {{- range $key, $value := .Values.runners.extraEnv }}
+            - name: {{ $key }}
+              {{- toYaml $value | nindent 14 }}
+            {{- end }}
+          {{- if .Values.main.secret }}
+          envFrom:
+            - secretRef:
+                name: {{ include "n8n.fullname" . }}-app-secret
+          {{- end }}
+          {{- if .Values.runners.configMapName }}
+          volumeMounts:
+            - name: runners-launcher-config
+              mountPath: /etc/n8n-task-runners.json
+              subPath: n8n-task-runners.json
+              readOnly: true
+          {{- end }}
+          resources:
+            {{- toYaml .Values.runners.resources | nindent 12 }}
+        {{- end }}
       {{- with .Values.hostAliases }}
       hostAliases:
         {{- toYaml . | nindent 8 }}
@@ -137,6 +163,14 @@ spec:
       volumes:
         - name: "data"
           {{ include "n8n.pvc" . }}
+        {{- if and .Values.runners.enabled .Values.runners.configMapName }}
+        - name: runners-launcher-config
+          configMap:
+            name: {{ .Values.runners.configMapName }}
+            items:
+              - key: {{ .Values.runners.configMapKey }}
+                path: n8n-task-runners.json
+        {{- end }}
         {{- if .Values.main.extraVolumes }}
           {{- toYaml .Values.main.extraVolumes | nindent 8 }}
         {{- end }}

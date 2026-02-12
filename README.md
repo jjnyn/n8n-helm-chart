@@ -2,7 +2,7 @@
 
 # n8n Helm Chart for Kubernetes (jjnyn release)
 
-This is a [jjnyn](https://github.com/jjnyn)-maintained release of the n8n Helm chart, based on [8gears/n8n-helm-chart](https://github.com/8gears/n8n-helm-chart). It includes support for **task runners (external mode)** with configurable `runners.image.repository` and `runners.image.tag` for the `n8nio/runners` image (n8n v2+).
+This is a [jjnyn](https://github.com/jjnyn)-maintained release of the n8n Helm chart, based on [8gears/n8n-helm-chart](https://github.com/8gears/n8n-helm-chart). It includes **task runners in external mode as a sidecar** (per [official n8n docs](https://docs.n8n.io/hosting/configuration/task-runners/)): when `runners.enabled` is true, the `n8nio/runners` image runs as a sidecar on the main pod and on each worker pod, with configurable `runners.image.repository` and `runners.image.tag` (n8n v2+).
 
 [n8n](https://github.com/n8n-io/n8n) is an extendable workflow automation tool.
 
@@ -26,7 +26,7 @@ Use this structure to orient yourself.
 2. Ingress, (default is nginx, but you can change it to your own ingress controller)
 3. Main n8n app configuration + Kubernetes specific settings
 4. Worker related settings + Kubernetes specific settings
-5. **Task runners (external mode)** – optional `runners` section with `runners.image.repository` and `runners.image.tag` for the n8nio/runners image (n8n v2+)
+5. **Task runners (external mode, sidecar)** – when `runners.enabled` is true, the n8nio/runners image runs as a sidecar on the main pod and on each worker pod (per official n8n docs). Use `runners.image.repository` and `runners.image.tag` to override the image.
 6. Webhook related settings + Kubernetes specific settings
 7. Raw Resources to pass through your own manifests like GatewayAPI, ServiceMonitor etc.
 8. Valkey/Redis related settings + Kubernetes specific settings
